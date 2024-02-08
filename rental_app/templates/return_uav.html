@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Return UAV{% endblock %}
+
+{% block content %}
+    <h2>Return UAV</h2>
+    <p>You are returning the following UAV:</p>
+    <p>{{ rental.uav.brand }} - {{ rental.uav.model }}</p>
+    <p>Thank you for using our service.</p>
+{% endblock %}

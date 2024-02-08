@@ -1,0 +1,71 @@
+<!-- profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <h4>Search In Your Rentals</h4>
+    <form class="d-flex" method="get" action="{% url 'profile' %}">
+        <label class="input-group-text" for="inputGroupSelect01">Start Date >=</label>
+        <input class="form-control" type="date" name="rental_start_date" id="inputGroupSelect01" placeholder="Start Date">
+        <label class="input-group-text" for="inputGroupSelect02">End Date <=</label>
+        <input class="form-control"  type="date" name="rental_end_date" id="inputGroupSelect02" placeholder="End Date">
+        <button class="btn btn-primary" type="submit">Date Search</button>
+    </form>
+    <hr>
+    <table class="table caption-top" id="rentalTable">
+        <style>
+            table, td {
+              border: 2px solid black;
+            }
+        </style>
+        <caption>
+            <h3>Your Rented UAVs</h3>
+        </caption>
+        <thead>
+        <tr class="table-primary text-center">
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Dates</th>
+            <th>Update Dates</th>
+            <th>Return</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for rented_uav in rented_uavs %}
+            <tr class="table-light text-center">
+                <td class="fw-bold">{{ rented_uav.uav.brand }}</td>
+                <td class="fw-bold">{{ rented_uav.uav.model }}</td>
+                <td>{{ rented_uav.rental_start }} - {{ rented_uav.rental_end }}</td>
+                <td>
+                    <form action="{% url 'update_rental' rented_uav.id %}" method="post">
+                    {% csrf_token %}
+                    <label for="start_date">New Start Date:</label>
+                    <input class="form-control" type="datetime-local" id="start_date" name="start_date">
+                    <br>
+                    <label for="end_date">New End Date:</label>
+                    <input class="form-control" type="datetime-local" id="end_date" name="end_date">
+                    <br>
+                    <button class="btn btn-primary" type="submit">Update Dates</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="{% url 'return_uav' rented_uav.id %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Return</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        $(document).ready(function() {
+            $('#rentalTable').DataTable({
+                "language": {
+                  "emptyTable": "You have not rented any UAVs yet."
+                }
+            });
+        })
+        </script>
+{% endblock %}

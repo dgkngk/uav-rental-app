@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Rent UAV{% endblock %}
+
+{% block content %}
+    <div class="container-fluid text-center">
+        <p class="h5 mt-3 mb-3">You are renting the following UAV:</p>
+        <p class="h4 mt-3 mb-3 fw-bold">{{ uav.brand }} - {{ uav.model }}</p>
+        <div class="input-group justify-content-center">
+            <form  action="{% url 'rent_uav' uav.id %}" method="post">
+                {% csrf_token %}
+                <label for="start_date">Start Date and Time:</label>
+                <input class="form-control" type="datetime-local" id="start_date" name="start_date" required>
+                <br>
+                <label for="end_date">End Date and Time:</label>
+                <input class="form-control" type="datetime-local" id="end_date" name="end_date" required>
+                <br>
+                <button class="btn btn-primary" type="submit">Confirm Rental</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
