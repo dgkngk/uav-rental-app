@@ -1,0 +1,14 @@
+# Django
+*.pyc
+*.pyo
+__pycache__
+*.sqlite3
+*.pyc
+*/migrations/*
+
+# PostgreSQL
+*.log
+*.bak
+*.pg_dump
+*.pg_dumpall
+*.sql
