@@ -3,7 +3,7 @@
 
 UAV Rental App is a Django web application for renting unmanned aerial vehicles (UAVs). It allows users to browse available UAVs, make rental requests, and manage their rentals. This README provides instructions for installing, running, and using the application.
 
-This project is made as a case study for Baykar Interview.
+This project is made as a case study for Baykar Interview. Project took 18 man-hours to complete to this state.
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
