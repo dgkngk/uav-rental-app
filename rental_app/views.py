@@ -1,3 +1,5 @@
+# Views for handling user authentication, rental operations, and profile management.
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -21,9 +23,9 @@ from .permissions import IsAdminOrReadOnly
 
 # utility functions
 def get_all_active_uavs(request):
-    # Retrieve all uavs that are not rented
+    # Retrieve all UAVs that are not rented
     uavs = UAV.objects.all().exclude(is_rented=True)
-    # Filter uavs based on search query if query is present
+    # Filter UAVs based on search query if query is present
     uav_query = {}
     brand = request.GET.get('brand')
     if brand:
@@ -42,14 +44,15 @@ def get_all_active_uavs(request):
 
 # api views
 class ApiLoginView(generics.CreateAPIView):
+    # Handles user login via API
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
+        # Validate user credentials and issue a token if valid
         username = request.data.get('username')
         password = request.data.get('password')
-
         user = authenticate(username=username, password=password)
 
         if user is not None:
@@ -60,10 +63,12 @@ class ApiLoginView(generics.CreateAPIView):
 
 
 class ApiLogoutView(generics.DestroyAPIView):
+    # Handles user logout via API
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def delete(self, request, *args, **kwargs):
+        # Deletes user token upon logout
         token = request.data.get('token')
         if token:
             try:
@@ -76,6 +81,7 @@ class ApiLogoutView(generics.DestroyAPIView):
 
 
 class ApiSignupView(APIView):
+    # Handles user signup via API
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -88,12 +94,14 @@ class ApiSignupView(APIView):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def api_uav_list(request):
+    # API endpoint for retrieving a list of available UAVs
     uavs = get_all_active_uavs(request)
     serializer = UAVSerializer(uavs, many=True)
     return Response(serializer.data)
 
 
 def api_uav_list_json(request):
+    # API endpoint for retrieving a list of available UAVs in JSON format
     uavs = get_all_active_uavs(request)
     serializer = UAVSerializer(uavs, many=True)
     return JsonResponse(serializer.data, safe=False)
@@ -103,6 +111,7 @@ def api_uav_list_json(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def make_rental(request):
+    # API endpoint for creating a rental request
     serializer = RentalSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -111,12 +120,14 @@ def make_rental(request):
 
 
 class UAVViewSet(viewsets.ModelViewSet):
+    # ViewSet for CRUD operations on UAVs
     queryset = UAV.objects.all()
     serializer_class = UAVSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class RentalViewSet(viewsets.ModelViewSet):
+    # ViewSet for CRUD operations on Rentals
     queryset = Rental.objects.all()
     serializer_class = RentalSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -124,6 +135,7 @@ class RentalViewSet(viewsets.ModelViewSet):
 
 # views
 def signup_view(request):
+    # View for user signup page
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -136,6 +148,7 @@ def signup_view(request):
 
 
 def login_view(request):
+    # View for user login page
     if request.method == 'POST':
         form = AuthenticationForm(request, request.POST)
         if form.is_valid():
@@ -154,19 +167,22 @@ def login_view(request):
 
 
 def logout_view(request):
+    # View for user logout
     logout(request)
     return redirect('login')
 
 
 @login_required(redirect_field_name='next', login_url='login')
 def home_view(request):
-    # Retrieve all uavs that are not rented
+    # View for home page
+    # Retrieve all UAVs that are not rented
     uavs = get_all_active_uavs(request)
     return render(request, 'home.html', {'active_uavs': uavs})
 
 
 @login_required
 def rent_uav(request, uav_id):
+    # View for renting a UAV
     # Retrieve the UAV object or return a 404 error if not found
     uav = get_object_or_404(UAV, id=uav_id)
 
@@ -185,6 +201,7 @@ def rent_uav(request, uav_id):
 
 @login_required
 def return_uav(request, rental_id):
+    # View for returning a rented UAV
     rental = get_object_or_404(Rental, id=rental_id, user=request.user)
     rental.end_date = timezone.now()
     rental.is_active = False
@@ -197,6 +214,7 @@ def return_uav(request, rental_id):
 
 @login_required
 def update_rental(request, rental_id):
+    # View for updating rental details
     rental = get_object_or_404(Rental, id=rental_id, user=request.user)
     if request.method == 'POST':
         start_date = request.POST.get('start_date')
@@ -217,6 +235,7 @@ def update_rental(request, rental_id):
 
 @login_required
 def profile_view(request):
+    # View for user profile page
     # Retrieve all rentals
     rented_uavs = Rental.objects.filter(user=request.user, is_active=True)
     # Filter rented UAVs based on search query if query is present
@@ -231,6 +250,3 @@ def profile_view(request):
         rented_uavs = rented_uavs.filter(**rental_query)
 
     return render(request, 'profile.html', {'rented_uavs': rented_uavs})
-
-
-
